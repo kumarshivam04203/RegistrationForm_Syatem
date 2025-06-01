@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Upload, Camera, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, Camera, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { RegistrationFormData } from '../types';
 import axios from 'axios';
 
@@ -15,6 +15,12 @@ const registrationSchema = z.object({
   gender: z.enum(['male', 'female', 'other']),
   mobile: z.string().regex(/^[0-9]{10}$/, 'Mobile number must be 10 digits'),
   email: z.string().email('Please enter a valid email address'),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number')
+    .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
   aadhaar: z.string().regex(/^[0-9]{12}$/, 'Aadhaar number must be 12 digits'),
   pan: z.string().regex(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, 'Please enter a valid PAN'),
   permanentAddress: z.string().min(5, 'Address must be at least 5 characters'),
@@ -31,6 +37,7 @@ const RegistrationForm: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null);
   const [statusMessage, setStatusMessage] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   
   const photoInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -127,7 +134,10 @@ const RegistrationForm: React.FC = () => {
           'Content-Type': 'multipart/form-data',
         },
       });
-      
+      if (response.data.token) {
+        // Store the token in localStorage
+        localStorage.setItem('authToken', response.data.token);
+      }
       // Reset form on success
       reset();
       setPhotoFile(null);
@@ -258,6 +268,29 @@ const RegistrationForm: React.FC = () => {
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
               />
               {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
+            </div>
+            <div className="relative">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  {...register('password')}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <Eye className="h-5 w-5 text-gray-400" />
+                  )}
+                </button>
+              </div>
+              {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>}
             </div>
           </div>
           

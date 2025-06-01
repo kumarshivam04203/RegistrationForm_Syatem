@@ -6,6 +6,7 @@ const registrationSchema = new mongoose.Schema({
   gender: { type: String, enum: ['male', 'female', 'other'], required: true },
   mobile: { type: String, required: true },
   email: { type: String, required: true },
+  password: { type: String, required: true },
   aadhaar: { type: String, required: true },
   pan: { type: String, required: true },
   permanentAddress: { type: String, required: true },
@@ -15,5 +16,10 @@ const registrationSchema = new mongoose.Schema({
   photoUrl: { type: String, required: true },
   videoUrl: { type: String, required: true }
 }, { timestamps: true });
+
+registrationSchema.methods.comparePassword = async function(candidatePassword) {
+  const bcrypt = require('bcryptjs');
+  return await bcrypt.compare(candidatePassword, this.password);
+}
 
 export default mongoose.model('Registration', registrationSchema);

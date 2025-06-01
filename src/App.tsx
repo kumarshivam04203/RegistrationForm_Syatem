@@ -47,7 +47,7 @@ function App() {
             <Route
               path="/admin"
               element={
-                !isAdmin ? (
+                isAdmin ? (
                   <Navigate to="/dashboard\" replace />
                 ) : (
                   <AdminLogin onLogin={handleAdminLogin} />
@@ -57,7 +57,7 @@ function App() {
             <Route
               path="/dashboard"
               element={
-                !isAdmin ? (
+                isAdmin ? (
                   <AdminDashboard onLogout={handleAdminLogout} />
                 ) : (
                   <Navigate to="/admin" replace />

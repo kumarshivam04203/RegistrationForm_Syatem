@@ -1,5 +1,7 @@
 import express from 'express';
 import { v2 as cloudinary } from 'cloudinary';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import Registration from '../models/Registration.js';
 import { authenticateToken } from '../middleware/auth.js';
 import upload from '../middleware/upload.js';
@@ -13,6 +15,9 @@ router.post('/', upload.fields([
 ]), async (req, res) => {
   try {
     const { files, body } = req;
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(body.password, 10);
 
     // Upload files to Cloudinary
     const [photoResult, videoResult] = await Promise.all([
@@ -28,12 +33,19 @@ router.post('/', upload.fields([
 
     const registration = new Registration({
       ...body,
+      password: hashedPassword,
       photoUrl: photoResult.secure_url,
       videoUrl: videoResult.secure_url
     });
 
     await registration.save();
-    res.status(201).json(registration);
+
+    // Generate JWT token
+    const token = jwt.sign({ id: registration._id, email: registration.email }, process.env.JWT_SECRET, {
+      expiresIn: '1d'
+    });
+
+    res.status(201).json({ registration, token });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

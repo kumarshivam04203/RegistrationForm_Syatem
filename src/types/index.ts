@@ -4,6 +4,7 @@ export interface RegistrationFormData {
   gender: 'male' | 'female' | 'other';
   mobile: string;
   email: string;
+  password: string;
   aadhaar: string;
   pan: string;
   permanentAddress: string;
