@@ -39,6 +39,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     "view"
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,14 +51,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           return;
         }
 
-        const response = await axios.get(
-          "http://localhost:5000/api/registrations",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await axios.get(`${API_BASE_URL}/api/registrations`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         if (response.status === 200) {
           setSubmissions(
@@ -148,7 +147,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       }
 
       const response = await axios.put(
-        `http://localhost:5000/api/registrations/${selectedSubmission.id}`,
+        `${API_BASE_URL}/api/registrations/${selectedSubmission.id}`,
         editedSubmission,
         {
           headers: {
@@ -188,7 +187,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       }
 
       const response = await axios.delete(
-        `http://localhost:5000/api/registrations/${selectedSubmission.id}`,
+        `${API_BASE_URL}/api/registrations/${selectedSubmission.id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

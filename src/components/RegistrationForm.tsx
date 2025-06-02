@@ -58,6 +58,8 @@ const RegistrationForm: React.FC = () => {
 
   const photoInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
   const {
     register,
@@ -149,7 +151,7 @@ const RegistrationForm: React.FC = () => {
       formData.append("video", videoFile);
 
       const response = await axios.post(
-        "http://localhost:5000/api/registrations",
+        `${API_BASE_URL}/api/registrations`,
         formData,
         {
           headers: {
