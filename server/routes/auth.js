@@ -1,27 +1,46 @@
+// server/routes/auth.js
 import express from 'express';
+import Registration from '../models/Registration.js';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import Admin from '../models/Admin.js';
 
 const router = express.Router();
 
 router.post('/login', async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    const admin = await Admin.findOne({ username });
+  const { email, password } = req.body;
 
-    if (!admin || !(await admin.comparePassword(password))) {
-      return res.status(401).json({ message: 'Invalid username or password' });
+  // Validate input
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password are required.' });
+  }
+
+  try {
+    // Find user by email
+    const user = await Registration.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
 
+    // Compare password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Incorrect password' });
+    }
+
+    // Create JWT token
     const token = jwt.sign(
-      { id: admin._id, username: admin.username },
+      { id: user._id, email: user.email },
       process.env.JWT_SECRET,
-      { expiresIn: '24h' }
+      { expiresIn: '1d' }
     );
 
-    res.json({ token });
+    // Exclude password from response
+    const { password: pwd, ...userWithoutPassword } = user.toObject();
+
+    // Send response
+    res.json({ token, user: userWithoutPassword });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Login failed', error: error.message });
   }
 });
 

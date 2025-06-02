@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Search,
   Filter,
@@ -40,54 +41,92 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Mock data for demonstration
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     // Simulate API call
+  //     await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  //     // Generate mock data
+  //     const mockData: Submission[] = Array.from({ length: 50 }, (_, i) => ({
+  //       id: `SUB${1000 + i}`,
+  //       fullName: `User ${i + 1}`,
+  //       dateOfBirth: new Date(1980 + Math.floor(i / 10), i % 12, (i % 28) + 1)
+  //         .toISOString()
+  //         .split("T")[0],
+  //       gender: i % 3 === 0 ? "male" : i % 3 === 1 ? "female" : "other",
+  //       mobile: `98765${43210 + i}`,
+  //       email: `user${i + 1}@example.com`,
+  //       password: `password${i + 1}`,
+  //       aadhaar: `${123456789000 + i}`,
+  //       pan: `ABCDE${1234 + i}F`,
+  //       permanentAddress: `${123 + i} Main Street, Apartment ${i + 1}`,
+  //       state:
+  //         i % 5 === 0
+  //           ? "Maharashtra"
+  //           : i % 5 === 1
+  //           ? "Karnataka"
+  //           : i % 5 === 2
+  //           ? "Tamil Nadu"
+  //           : i % 5 === 3
+  //           ? "Delhi"
+  //           : "Gujarat",
+  //       city:
+  //         i % 4 === 0
+  //           ? "Mumbai"
+  //           : i % 4 === 1
+  //           ? "Bangalore"
+  //           : i % 4 === 2
+  //           ? "Chennai"
+  //           : "Delhi",
+  //       pincode: `${400000 + i}`,
+  //       photoUrl:
+  //         "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+  //       videoUrl:
+  //         "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4",
+  //       createdAt: new Date(2023, i % 12, (i % 28) + 1).toISOString(),
+  //       updatedAt: new Date(2023, i % 12, (i % 28) + 1).toISOString(),
+  //     }));
+
+  //     setSubmissions(mockData);
+  //     setLoading(false);
+  //   };
+
+  //   fetchData();
+  // }, []);
+
   useEffect(() => {
     const fetchData = async () => {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      try {
+        const token = localStorage.getItem("token"); // Adjust key name if different
+        if (!token) {
+          console.error("No token found in localStorage.");
+          return;
+        }
 
-      // Generate mock data
-      const mockData: Submission[] = Array.from({ length: 50 }, (_, i) => ({
-        id: `SUB${1000 + i}`,
-        fullName: `User ${i + 1}`,
-        dateOfBirth: new Date(1980 + Math.floor(i / 10), i % 12, (i % 28) + 1)
-          .toISOString()
-          .split("T")[0],
-        gender: i % 3 === 0 ? "male" : i % 3 === 1 ? "female" : "other",
-        mobile: `98765${43210 + i}`,
-        email: `user${i + 1}@example.com`,
-        password: `password${i + 1}`,
-        aadhaar: `${123456789000 + i}`,
-        pan: `ABCDE${1234 + i}F`,
-        permanentAddress: `${123 + i} Main Street, Apartment ${i + 1}`,
-        state:
-          i % 5 === 0
-            ? "Maharashtra"
-            : i % 5 === 1
-            ? "Karnataka"
-            : i % 5 === 2
-            ? "Tamil Nadu"
-            : i % 5 === 3
-            ? "Delhi"
-            : "Gujarat",
-        city:
-          i % 4 === 0
-            ? "Mumbai"
-            : i % 4 === 1
-            ? "Bangalore"
-            : i % 4 === 2
-            ? "Chennai"
-            : "Delhi",
-        pincode: `${400000 + i}`,
-        photoUrl:
-          "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-        videoUrl:
-          "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4",
-        createdAt: new Date(2023, i % 12, (i % 28) + 1).toISOString(),
-        updatedAt: new Date(2023, i % 12, (i % 28) + 1).toISOString(),
-      }));
+        const response = await axios.get(
+          "http://localhost:5000/api/registrations",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-      setSubmissions(mockData);
-      setLoading(false);
+        if (response.status === 200) {
+          setSubmissions(
+            response.data.registrations.map((item: any) => ({
+              ...item,
+              id: item._id, // For table or UI components needing `id`
+            }))
+          );
+        } else {
+          console.error("Failed to fetch submissions:", response);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();

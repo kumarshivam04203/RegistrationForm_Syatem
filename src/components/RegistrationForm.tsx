@@ -134,6 +134,7 @@ const RegistrationForm: React.FC = () => {
           'Content-Type': 'multipart/form-data',
         },
       });
+      console.log('res', response);
       if (response.data.token) {
         // Store the token in localStorage
         localStorage.setItem('authToken', response.data.token);

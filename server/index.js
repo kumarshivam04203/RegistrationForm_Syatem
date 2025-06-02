@@ -16,6 +16,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true,
+}));
+
 // Cloudinary configuration
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -26,6 +31,11 @@ cloudinary.config({
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/registrations', registrationRoutes);
+
+app.get('/', (req, res) => {
+  res.send('Welcome to the Registration API');
+});
+
 
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI)

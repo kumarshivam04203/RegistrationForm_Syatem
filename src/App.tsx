@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import RegistrationForm from './components/RegistrationForm';
 import AdminLogin from './components/AdminLogin';
@@ -8,12 +8,23 @@ function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminToken, setAdminToken] = useState<string | null>(null);
 
+  // ✅ Check localStorage token on initial load
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setAdminToken(token);
+      setIsAdmin(true);
+    }
+  }, []);
+
   const handleAdminLogin = (token: string) => {
+    localStorage.setItem('token', token); // ✅ ensure it's stored on login
     setAdminToken(token);
     setIsAdmin(true);
   };
 
   const handleAdminLogout = () => {
+    localStorage.removeItem('token'); // ✅ clear on logout
     setAdminToken(null);
     setIsAdmin(false);
   };
@@ -48,7 +59,7 @@ function App() {
               path="/admin"
               element={
                 isAdmin ? (
-                  <Navigate to="/dashboard\" replace />
+                  <Navigate to="/dashboard" replace />
                 ) : (
                   <AdminLogin onLogin={handleAdminLogin} />
                 )
