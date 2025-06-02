@@ -1,4 +1,3 @@
-// server/routes/auth.js
 import express from 'express';
 import Registration from '../models/Registration.js';
 import bcrypt from 'bcrypt';

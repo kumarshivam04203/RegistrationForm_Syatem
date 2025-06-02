@@ -40,64 +40,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Mock data for demonstration
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     // Simulate API call
-  //     await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  //     // Generate mock data
-  //     const mockData: Submission[] = Array.from({ length: 50 }, (_, i) => ({
-  //       id: `SUB${1000 + i}`,
-  //       fullName: `User ${i + 1}`,
-  //       dateOfBirth: new Date(1980 + Math.floor(i / 10), i % 12, (i % 28) + 1)
-  //         .toISOString()
-  //         .split("T")[0],
-  //       gender: i % 3 === 0 ? "male" : i % 3 === 1 ? "female" : "other",
-  //       mobile: `98765${43210 + i}`,
-  //       email: `user${i + 1}@example.com`,
-  //       password: `password${i + 1}`,
-  //       aadhaar: `${123456789000 + i}`,
-  //       pan: `ABCDE${1234 + i}F`,
-  //       permanentAddress: `${123 + i} Main Street, Apartment ${i + 1}`,
-  //       state:
-  //         i % 5 === 0
-  //           ? "Maharashtra"
-  //           : i % 5 === 1
-  //           ? "Karnataka"
-  //           : i % 5 === 2
-  //           ? "Tamil Nadu"
-  //           : i % 5 === 3
-  //           ? "Delhi"
-  //           : "Gujarat",
-  //       city:
-  //         i % 4 === 0
-  //           ? "Mumbai"
-  //           : i % 4 === 1
-  //           ? "Bangalore"
-  //           : i % 4 === 2
-  //           ? "Chennai"
-  //           : "Delhi",
-  //       pincode: `${400000 + i}`,
-  //       photoUrl:
-  //         "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-  //       videoUrl:
-  //         "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4",
-  //       createdAt: new Date(2023, i % 12, (i % 28) + 1).toISOString(),
-  //       updatedAt: new Date(2023, i % 12, (i % 28) + 1).toISOString(),
-  //     }));
-
-  //     setSubmissions(mockData);
-  //     setLoading(false);
-  //   };
-
-  //   fetchData();
-  // }, []);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("token"); // Adjust key name if different
+        const token = localStorage.getItem("token");
         if (!token) {
           console.error("No token found in localStorage.");
           return;
@@ -116,7 +62,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           setSubmissions(
             response.data.registrations.map((item: any) => ({
               ...item,
-              id: item._id, // For table or UI components needing `id`
+              id: item._id,
             }))
           );
         } else {
@@ -160,7 +106,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   // Handle pagination
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
-  // Handle view submission
   const handleViewSubmission = (submission: Submission) => {
     setSelectedSubmission(submission);
     setModalType("view");
@@ -196,13 +141,33 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
     setIsSubmitting(true);
     try {
-      // In a real implementation, we would send this to the backend
-      // For now, we'll just update the local state
-      const updatedSubmissions = submissions.map((sub) =>
-        sub.id === selectedSubmission.id ? { ...sub, ...editedSubmission } : sub
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found in localStorage.");
+        return;
+      }
+
+      const response = await axios.put(
+        `http://localhost:5000/api/registrations/${selectedSubmission.id}`,
+        editedSubmission,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
-      setSubmissions(updatedSubmissions);
-      setShowModal(false);
+
+      if (response.status === 200) {
+        const updated = response.data.updatedSubmission || editedSubmission;
+        const updatedSubmissions = submissions.map((sub) =>
+          sub.id === selectedSubmission.id ? { ...sub, ...updated } : sub
+        );
+        setSubmissions(updatedSubmissions);
+        setShowModal(false);
+      } else {
+        console.error("Failed to update submission:", response);
+      }
     } catch (error) {
       console.error("Error updating submission:", error);
     } finally {
@@ -211,10 +176,38 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   };
 
   // Confirm delete
-  const confirmDelete = () => {
-    if (selectedSubmission) {
-      setSubmissions(submissions.filter((s) => s.id !== selectedSubmission.id));
-      setShowModal(false);
+  const confirmDelete = async () => {
+    if (!selectedSubmission) return;
+
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found in localStorage.");
+        return;
+      }
+
+      const response = await axios.delete(
+        `http://localhost:5000/api/registrations/${selectedSubmission.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        setSubmissions(
+          submissions.filter((s) => s.id !== selectedSubmission.id)
+        );
+        setShowModal(false);
+      } else {
+        console.error("Failed to delete submission:", response);
+      }
+    } catch (error) {
+      console.error("Error deleting submission:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

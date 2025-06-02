@@ -1,16 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
-import RegistrationForm from './components/RegistrationForm';
-import AdminLogin from './components/AdminLogin';
-import AdminDashboard from './components/AdminDashboard';
+import React, { useState, useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  Navigate,
+} from "react-router-dom";
+import RegistrationForm from "./components/RegistrationForm";
+import AdminLogin from "./components/AdminLogin";
+import AdminDashboard from "./components/AdminDashboard";
 
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminToken, setAdminToken] = useState<string | null>(null);
 
-  // ✅ Check localStorage token on initial load
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       setAdminToken(token);
       setIsAdmin(true);
@@ -18,13 +23,13 @@ function App() {
   }, []);
 
   const handleAdminLogin = (token: string) => {
-    localStorage.setItem('token', token); // ✅ ensure it's stored on login
+    localStorage.setItem("token", token);
     setAdminToken(token);
     setIsAdmin(true);
   };
 
   const handleAdminLogout = () => {
-    localStorage.removeItem('token'); // ✅ clear on logout
+    localStorage.removeItem("token");
     setAdminToken(null);
     setIsAdmin(false);
   };
@@ -36,18 +41,30 @@ function App() {
           <div className="max-w-7xl mx-auto flex justify-between items-center">
             <h1 className="text-xl font-bold">Registration System</h1>
             <div className="space-x-4">
-              <Link
-                to="/"
-                className="px-4 py-2 bg-white text-indigo-600 rounded-md hover:bg-indigo-100 transition-colors"
-              >
-                Registration Form
-              </Link>
-              <Link
-                to="/admin"
-                className="px-4 py-2 bg-white text-indigo-600 rounded-md hover:bg-indigo-100 transition-colors"
-              >
-                Admin Login
-              </Link>
+              {!isAdmin && (
+                <>
+                  <Link
+                    to="/"
+                    className="px-4 py-2 bg-white text-indigo-600 rounded-md hover:bg-indigo-100 transition-colors"
+                  >
+                    Registration Form
+                  </Link>
+                  <Link
+                    to="/admin"
+                    className="px-4 py-2 bg-white text-indigo-600 rounded-md hover:bg-indigo-100 transition-colors"
+                  >
+                    Admin Login
+                  </Link>
+                </>
+              )}
+              {/* {isAdmin && (
+                <button
+                  onClick={handleAdminLogout}
+                  className="px-4 py-2 bg-white text-indigo-600 rounded-md hover:bg-indigo-100 transition-colors"
+                >
+                  Logout
+                </button>
+              )} */}
             </div>
           </div>
         </nav>

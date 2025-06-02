@@ -8,13 +8,13 @@ import upload from "../middleware/upload.js";
 
 const router = express.Router();
 
-// 🔹 Helper to convert buffer to data URI
+// Helper to convert buffer to data URI
 const getDataUri = (fileBuffer, mimetype) => {
   const base64 = fileBuffer.toString("base64");
   return `data:${mimetype};base64,${base64}`;
 };
 
-// 🔹 Registration (public)
+// Registration (public)
 router.post(
   "/",
   upload.fields([
@@ -26,15 +26,23 @@ router.post(
       const { files, body } = req;
 
       if (!files.photo || !files.video) {
-        return res.status(400).json({ message: "Photo and video are required" });
+        return res
+          .status(400)
+          .json({ message: "Photo and video are required" });
       }
 
       // Hash password
       const hashedPassword = await bcrypt.hash(body.password, 10);
 
       // Convert buffers to data URIs
-      const photoDataUri = getDataUri(files.photo[0].buffer, files.photo[0].mimetype);
-      const videoDataUri = getDataUri(files.video[0].buffer, files.video[0].mimetype);
+      const photoDataUri = getDataUri(
+        files.photo[0].buffer,
+        files.photo[0].mimetype
+      );
+      const videoDataUri = getDataUri(
+        files.video[0].buffer,
+        files.video[0].mimetype
+      );
 
       // Upload to Cloudinary
       const [photoResult, videoResult] = await Promise.all([
@@ -73,7 +81,7 @@ router.post(
   }
 );
 
-// 🔐 Admin-only - Get all registrations
+// Get all registrations
 router.get("/", authenticateToken, async (req, res) => {
   try {
     const { page = 1, limit = 10, search, state, city, gender } = req.query;
@@ -113,7 +121,7 @@ router.get("/", authenticateToken, async (req, res) => {
   }
 });
 
-// 🔐 Admin-only - Get one
+// Get one
 router.get("/:id", authenticateToken, async (req, res) => {
   try {
     const registration = await Registration.findById(req.params.id);
@@ -126,7 +134,7 @@ router.get("/:id", authenticateToken, async (req, res) => {
   }
 });
 
-// 🔐 Admin-only - Update
+// Update
 router.put("/:id", authenticateToken, async (req, res) => {
   try {
     const updated = await Registration.findByIdAndUpdate(
@@ -141,7 +149,7 @@ router.put("/:id", authenticateToken, async (req, res) => {
   }
 });
 
-// 🔐 Admin-only - Delete
+// Delete
 router.delete("/:id", authenticateToken, async (req, res) => {
   try {
     const deleted = await Registration.findByIdAndDelete(req.params.id);

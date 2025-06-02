@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Lock, User } from "lucide-react";
+import { Lock, User, Eye, EyeOff } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().min(1, "Email is required").email(),
@@ -18,6 +18,7 @@ interface AdminLoginProps {
 const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -26,34 +27,6 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
-
-  // const onSubmit = async (data: LoginFormData) => {
-  //   setIsLoading(true);
-  //   setError(null);
-
-  //   try {
-  //     const response = await fetch("http://localhost:5000/api/auth/login", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(data),
-  //     });
-
-  //     const result = await response.json();
-
-  //     if (response.ok) {
-  //       onLogin(result.token); // Pass token to parent
-  //     } else {
-  //       setError(result.message || "Login failed");
-  //     }
-  //   } catch (err) {
-  //     console.error("Login error:", err);
-  //     setError("An error occurred during login. Please try again.");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
 
   const onSubmit = async (data: LoginFormData) => {
     console.log("Submitting login data:", data);
@@ -69,25 +42,15 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
         body: JSON.stringify(data),
       });
 
-      console.log("Response status:", response.status);
-
       const result = await response.json();
 
-      console.log("Response JSON:", result);
-
       if (response.ok) {
-        console.log("Login success, token:", result.token);
-
-        // ✅ Save token to localStorage
         localStorage.setItem("token", result.token);
-
-        // Optionally pass it to parent as well
         onLogin(result.token);
       } else {
         setError(result.message || "Login failed");
       }
     } catch (err) {
-      console.error("Login error:", err);
       setError("An error occurred during login. Please try again.");
     } finally {
       setIsLoading(false);
@@ -135,7 +98,8 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
         )}
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          <div className="rounded-md shadow-sm -space-y-px">
+          <div className="rounded-md shadow-sm">
+            {/* Email Field */}
             <div>
               <label htmlFor="email" className="sr-only">
                 Email
@@ -148,7 +112,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
                   id="email"
                   type="email"
                   {...register("email")}
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  className="appearance-none rounded-md relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   placeholder="Email"
                 />
               </div>
@@ -158,6 +122,10 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
                 </p>
               )}
             </div>
+
+            <div className="mt-4" />
+
+            {/* Password Field */}
             <div>
               <label htmlFor="password" className="sr-only">
                 Password
@@ -168,11 +136,23 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
                 </div>
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   {...register("password")}
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  className="appearance-none rounded-md relative block w-full px-3 py-2 pl-10 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   placeholder="Password"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 focus:outline-none"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
               </div>
               {errors.password && (
                 <p className="mt-1 text-sm text-red-600">
@@ -181,7 +161,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
               )}
             </div>
           </div>
-
+          {/* Submit Button */}
           <div>
             <button
               type="submit"
